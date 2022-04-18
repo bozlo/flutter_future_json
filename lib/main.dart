@@ -17,12 +17,14 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late Future<Info> info;
+  String result =  'no data found';
 
   @override
   void initState() {
     super.initState();
     info = fetchInfo();
   }
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,49 +37,57 @@ class _MyAppState extends State<MyApp> {
           centerTitle: true,
         ),
         body: Center(
-          child: FutureBuilder<Info>(
-            future: info,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      '고객번호: ' + snapshot.data!.id.toString(),
-                      style: TextStyle(fontSize: 20.0),
-                    ),
-                    Text(
-                      '고객명: ' + snapshot.data!.userName.toString(),
-                      style: TextStyle(fontSize: 20.0),
-                    ),
-                    Text(
-                      '계좌 아이디: ' + snapshot.data!.account.toString(),
-                      style: TextStyle(fontSize: 20.0),
-                    ),
-                    Text(
-                      '잔액: ' + snapshot.data!.balance.toString() + '원',
-                      style: TextStyle(fontSize: 20.0),
-                    ),
-                    SizedBox(height: 40,),
-                    ElevatedButton(child: Text('Read Again'), onPressed: () {
-                      setState(() {
-                        info = fetchInfo();
-                      });
-                    })
-                  ],
-                );
-              } else if (snapshot.hasError) {
-                return Text("${snapshot.error}");
-              }
-              return CircularProgressIndicator();
-            },
-          ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+
+              children: <Widget>[
+                ElevatedButton(child: Text('Future test'), onPressed: () {
+                  futureTest();
+                }),
+                SizedBox(height: 20,),
+                Text(result,
+                  style: TextStyle(
+                    color: Colors.brown,
+                  ),),
+                Divider(height: 40, thickness: 2, color: Colors.redAccent,),
+                FutureBuilder(
+                    future: myFuture(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return Text(
+                          snapshot.data.toString(),
+                          style: TextStyle(
+                            fontSize: 25.0,
+                            color: Colors.red,
+                          ),
+                        );
+                      }
+                      return CircularProgressIndicator();
+                    },
+                ),
+              ],
+            ),
         ),
       ),
     );
   }
+
+  Future<void> futureTest() async {
+    await Future.delayed(Duration(seconds: 3))
+        .then((_) {
+        setState(() {
+          this.result = "The data is fetched";
+        });
+        print("end of future test");
+    });
+  }
+
+  Future<String> myFuture() async {
+    await Future.delayed(Duration(seconds: 3));
+    return "anther Future completed";
+  }
 }
+
 
 Future<Info> fetchInfo() async {
   final response =
